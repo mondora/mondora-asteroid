@@ -4,11 +4,11 @@
 
 Install the package using meteorite:
 
-    mrt install mondora-asteroid
+    meteor add mondora:asteroid
     
-Set the `ALLOWED_ORIGINS` environment variable:
+Set the `ALLOWED_ORIGIN` environment variable:
 
-    export ALLOWED_ORIGINS='http://example.com'
+    export ALLOWED_ORIGIN='http://example.com'
 
 Launch Meteor
 
