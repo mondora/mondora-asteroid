@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script>
+
+			// The value of the following variables will be
+			// replaced if no error occurs.
+			var credentialToken = "TOKEN";
+			var credentialSecret = "SECRET";
+			var allowedOrigin = "ALLOWED_ORIGIN";
+			var localStoragePrefix = "LOCAL_STORAGE_PREFIX";
+
+			// Check if the token has been replaced
+			if (credentialToken !== "TOKEN") {
+
+				// Response that will be sent in a few cases
+				var response = JSON.stringify({
+					credentialToken: credentialToken,
+					credentialSecret: credentialSecret
+				});
+
+				/*
+				 *  We employ a few different strategies to communicate
+				 *  the secret back to the opener window
+				 */
+
+				// Try to set the token in localStorage
+				// Needed for apps that use the meteor frontend
+				try {
+					localStorage[localStoragePrefix + credentialToken] = credentialSecret;
+				} catch (e) {
+					// Do nothing
+				}
+
+				// Try to call a function in the opener
+				// Needed for apps that use the meteor frontend
+				try {
+					window.opener.Package.oauth.OAuth._handleCredentialSecret(credentialToken, credentialSecret);
+					window.close();
+				} catch (e) {
+					// Do nothing
+				}
+
+				// Try to post a message to the opener
+				// Needed since safari on iOS pauses timers in background tabs
+				try {
+					window.opener.postMessage(response, allowedOrigin);
+					window.close();
+				} catch (e) {
+					// Do nothing
+				}
+
+				// Write the two tokens in the hash fragment
+				// Needed to support cordova
+				window.location.hash = "credentialToken=" + credentialToken + "&credentialSecret=" + credentialSecret;
+
+				// Reply to messages asking for the secret (only if coming form allowed origins)
+				// Needed where window.opener is not available
+				window.addEventListener("message", function (e) {
+					var message;
+					try {
+						message = JSON.parse(e.data);
+					} catch (err) {
+						window.close();
+						return;
+					}
+					if (
+						message.credentialToken === credentialToken &&
+						(allowedOrigin.indexOf(e.origin) !== -1 ||
+						allowedOrigin === "*")
+					) {
+						var response = JSON.stringify({
+							credentialToken: credentialToken,
+							credentialSecret: credentialSecret
+						});
+						e.source.postMessage(response, e.origin);
+						window.close();
+					}
+				});
+
+			}
+
+			// If the token hasn't been replaced, try to communicate an error to the opener window
+			else {
+
+				// Signal that an error occurred in the hash fragment
+				window.location.hash = "error=true";
+
+				// Reply to messages asking for the secret saying an error occurred
+				window.addEventListener("message", function (e) {
+					if (allowedOrigin.indexOf(e.origin) !== -1 || allowedOrigin === "*") {
+						var response = JSON.stringify({
+							error: "ERROR"
+						});
+						e.source.postMessage(response, e.origin);
+						window.close();
+					}
+				});
+
+				// Close the popup window
+				window.close();
+
+			}
+
+			// In any case, close the window after 10 seconds
+			window.setTimeout(function () {
+				window.close();
+			}, 10 * 1000);
+
+		</script>
+	</head>
+</html>
+
