@@ -12,48 +12,6 @@ if (ALLOWED_ORIGIN === "NONE") {
 	return;
 }
 
-
-
-
-// Retrieve the popup template
-var popupHtmlTemplate = Assets.getText("asteroid-oauth-popup.html");
-// Patch OAuth._endOfLoginResponse to expose the credentialToken and
-// credentialSecret in the url of the popup window.
-OAuth._endOfLoginResponse = function (res, details) {
-	// Set response headers
-	res.writeHead(200, {
-		"Content-Type": "text/html"
-	});
-	// Handle the error case
-	if (details.error) {
-		var errorDetails = details.error instanceof Error ? details.error.message : details.error;
-		Log.warn("Error in OAuth Server: " + errorDetails);
-		popupHtml = popupHtmlTemplate
-			.replace("ERROR", errorDetails)
-			.replace("ALLOWED_ORIGIN", ALLOWED_ORIGIN);
-		res.end(popupHtml, "utf-8");
-		return;
-	}
-	// Handle the success case
-	if ("close" in details.query) {
-		// If we have a credentialSecret, report it back to the parent
-		// window, with the corresponding credentialToken. The parent window
-		// uses the credentialToken and credentialSecret to log in over DDP.
-		if (details.credentials.token && details.credentials.secret) {
-			popupHtml = popupHtmlTemplate
-				.replace("TOKEN", details.credentials.token)
-				.replace("SECRET", details.credentials.secret)
-				.replace("ALLOWED_ORIGIN", ALLOWED_ORIGIN)
-				.replace("LOCAL_STORAGE_PREFIX", OAuth._localStorageTokenPrefix);
-		}
-		res.end(popupHtml, "utf-8");
-	} else {
-		res.end("", "utf-8");
-	}
-};
-
-
-
 // Add the cross-origin header to http requests
 Meteor.startup(function () {
 	WebApp.connectHandlers.use(function (req, res, next) {
@@ -61,3 +19,8 @@ Meteor.startup(function () {
 		return next();
 	});
 });
+
+// Overwrite the popup template
+OAuth._endOfPopupResponseTemplate = Assets.getText("asteroid-oauth-popup.html")
+	.replace("##ALLOWED_ORIGIN##", ALLOWED_ORIGIN)
+	.replace("##SCRIPT##", Assets.getText("asteroid-oauth-popup.js"));

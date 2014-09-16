@@ -7,7 +7,10 @@ Package.describe({
 
 Package.onUse(function (api) {
 	api.versionsFrom("METEOR@0.9.0");
-	api.use(["webapp", "logging", "oauth"], "server");
+	api.use("webapp", "server");
+	api.use("logging", "server");
+	api.use("oauth", "server");
 	api.addFiles("asteroid.js", "server");
 	api.addFiles("asteroid-oauth-popup.html", "server", {isAsset: true});
+	api.addFiles("asteroid-oauth-popup.js", "server", {isAsset: true});
 });
