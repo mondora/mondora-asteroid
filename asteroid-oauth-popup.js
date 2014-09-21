@@ -1,4 +1,4 @@
-window.onload = function () {
+function storeAndClose () {
 
 	var config = JSON.parse(document.getElementById("config").innerHTML);
 	var allowedOrigin = document.getElementById("allowed-origin").innerHTML;
@@ -76,4 +76,4 @@ window.onload = function () {
 		window.close();
 	}
 
-};
+}

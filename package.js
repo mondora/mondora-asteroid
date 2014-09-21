@@ -1,7 +1,7 @@
 Package.describe({
 	summary: "Configures Meteor to be used with Asteroid",
 	name: "mondora:asteroid",
-	version: "0.4.0",
+	version: "0.4.1",
 	git: "https://github.com/mondora/mondora-asteroid.git"
 });
 

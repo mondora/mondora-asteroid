@@ -1,12 +1,14 @@
-<!DOCTYPE html>
 <html>
 	<head>
 		<script>##SCRIPT##</script>
 	</head>
-	<body>
+	<body onload="storeAndClose()">
 		<p id="completedText" style="display:none;">
-			Login completed. <a href="#" onclick="window.close()">
-			Click here</a> to close this window.
+			Login completed.
+			<a href="#" onclick="window.close()">
+				Click here
+			</a>
+			to close this window.
 		</p>
 		<div id="config" style="display:none;">##CONFIG##</div>
 		<div id="allowed-origin" style="display:none;">##ALLOWED_ORIGIN##</div>
