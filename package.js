@@ -11,6 +11,8 @@ Package.onUse(function (api) {
 	api.use("logging", "server");
 	api.use("oauth", "server");
 	api.addFiles("asteroid.js", "server");
-	api.addFiles("asteroid-oauth-popup.html", "server", {isAsset: true});
-	api.addFiles("asteroid-oauth-popup.js", "server", {isAsset: true});
+	api.addFiles("end_of_popup_response.html", "server", {isAsset: true});
+	api.addFiles("end_of_popup_response.js", "server", {isAsset: true});
+	api.addFiles("end_of_redirect_response.html", "server", {isAsset: true});
+	api.addFiles("end_of_redirect_response.js", "server", {isAsset: true});
 });

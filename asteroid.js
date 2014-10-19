@@ -1,26 +1,22 @@
-// Set the ALLOWED_ORIGIN variable
-var ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
-if (!ALLOWED_ORIGIN) {
-	console.warn("You have not specified any allowed origin.");
-	console.warn("For ease of development, this will make any origin allowed, making the app insecure.");
-	console.warn("In production, remember to specify the origin.");
-	console.warn("If you wish not to allow any origin, set it to NONE.");
-	ALLOWED_ORIGIN = "*";
-}
-if (ALLOWED_ORIGIN === "NONE") {
-	ALLOWED_ORIGIN = Meteor.absoluteUrl();
-	return;
+var ALLOWED_OAUTH_ORIGINS = process.env.ALLOWED_OAUTH_ORIGINS;
+if (!ALLOWED_OAUTH_ORIGINS) {
+	ALLOWED_OAUTH_ORIGINS = "*";
 }
 
-// Add the cross-origin header to http requests
-Meteor.startup(function () {
-	WebApp.connectHandlers.use(function (req, res, next) {
-		res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
-		return next();
-	});
-});
+if (ALLOWED_OAUTH_ORIGINS === "NONE") {
+	OAuth.allowedOrigins = [Meteor.absoluteUrl()];
+} else {
+	OAuth.allowedOrigins = ALLOWED_OAUTH_ORIGINS.split(",");
+}
+
+var allowedOrigins = JSON.stringify(OAuth.allowedOrigins);
 
 // Overwrite the popup template
-OAuth._endOfPopupResponseTemplate = Assets.getText("asteroid-oauth-popup.html")
-	.replace("##ALLOWED_ORIGIN##", ALLOWED_ORIGIN)
-	.replace("##SCRIPT##", Assets.getText("asteroid-oauth-popup.js"));
+OAuth._endOfPopupResponseTemplate = Assets.getText("end_of_popup_response.html")
+	.replace("##ALLOWED_OAUTH_ORIGINS##", allowedOrigins)
+	.replace("##SCRIPT##", Assets.getText("end_of_popup_response.js"));
+
+// Overwrite the redirect template
+OAuth._endOfRedirectResponseTemplate = Assets.getText("end_of_redirect_response.html")
+	.replace("##ALLOWED_OAUTH_ORIGINS##", allowedOrigins)
+	.replace("##SCRIPT##", Assets.getText("end_of_redirect_response.js"));
