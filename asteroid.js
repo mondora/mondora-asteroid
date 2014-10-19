@@ -1,22 +1,20 @@
-var ALLOWED_OAUTH_ORIGINS = process.env.ALLOWED_OAUTH_ORIGINS;
-if (!ALLOWED_OAUTH_ORIGINS) {
-	ALLOWED_OAUTH_ORIGINS = "*";
+var ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
+if (!ALLOWED_ORIGIN) {
+	ALLOWED_ORIGIN = "*";
 }
 
-if (ALLOWED_OAUTH_ORIGINS === "NONE") {
-	OAuth.allowedOrigins = [Meteor.absoluteUrl()];
+if (ALLOWED_ORIGIN === "NONE") {
+	OAuth.allowedOrigin = Meteor.absoluteUrl();
 } else {
-	OAuth.allowedOrigins = ALLOWED_OAUTH_ORIGINS.split(",");
+	OAuth.allowedOrigin = ALLOWED_ORIGIN;
 }
-
-var allowedOrigins = JSON.stringify(OAuth.allowedOrigins);
 
 // Overwrite the popup template
 OAuth._endOfPopupResponseTemplate = Assets.getText("end_of_popup_response.html")
-	.replace("##ALLOWED_OAUTH_ORIGINS##", allowedOrigins)
+	.replace("##ALLOWED_ORIGIN##", OAuth.allowedOrigin)
 	.replace("##SCRIPT##", Assets.getText("end_of_popup_response.js"));
 
 // Overwrite the redirect template
 OAuth._endOfRedirectResponseTemplate = Assets.getText("end_of_redirect_response.html")
-	.replace("##ALLOWED_OAUTH_ORIGINS##", allowedOrigins)
+	.replace("##ALLOWED_ORIGIN##", OAuth.allowedOrigin)
 	.replace("##SCRIPT##", Assets.getText("end_of_redirect_response.js"));

@@ -1,11 +1,7 @@
 function storeAndClose () {
 
-	var config = JSON.parse(
-		document.getElementById("config").innerHTML
-	);
-	var allowedOrigins = JSON.parse(
-		document.getElementById("allowed-oauth-origins").innerHTML
-	);
+	var config = JSON.parse(document.getElementById("config").innerHTML);
+	var allowedOrigin = document.getElementById("allowed-origin").innerHTML;
 
 	if (config.setCredentialToken) {
 
@@ -25,17 +21,29 @@ function storeAndClose () {
 
 		// Try to set the token in localStorage
 		// Needed for apps that use the meteor frontend
-		localStorage[config.storagePrefix + credentialToken] = credentialSecret;
+		try {
+			localStorage[config.storagePrefix + credentialToken] = credentialSecret;
+		} catch (e) {
+			// Do nothing
+		}
+
+		// Try to call a function in the opener
+		// Needed for apps that use the meteor frontend
+		try {
+			window.opener.Package.oauth.OAuth._handleCredentialSecret(credentialToken, credentialSecret);
+			window.close();
+		} catch (e) {
+			// Do nothing
+		}
 
 		// Try to post a message to the opener
 		// Needed since safari on iOS pauses timers in background tabs
-		allowedOrigins.forEach(function (allowedOrigin) {
-			try {
-				window.opener.postMessage(credentialString, allowedOrigin);
-			} catch (e) {
-				// Do nothing
-			}
-		});
+		try {
+			window.opener.postMessage(credentialString, allowedOrigin);
+			window.close();
+		} catch (e) {
+			// Do nothing
+		}
 
 		// Write the two tokens (stringified) in the hash fragment
 		// Needed to support cordova
@@ -44,13 +52,20 @@ function storeAndClose () {
 		// Reply to messages asking for the secret (only if coming form allowed origins)
 		// Needed where window.opener is not available
 		window.addEventListener("message", function (e) {
-			var message = JSON.parse(e.data);
+			var message;
+			try {
+				message = JSON.parse(e.data);
+			} catch (err) {
+				window.close();
+				return;
+			}
 			if (
 				message.credentialToken === credentialToken &&
-				(allowedOrigins.indexOf(e.origin) !== -1 ||
-				allowedOrigins.indexOf("*") !== -1)
+				(allowedOrigin.indexOf(e.origin) !== -1 ||
+				allowedOrigin === "*")
 			) {
 				e.source.postMessage(credentialString, e.origin);
+				window.close();
 			}
 		});
 
@@ -58,6 +73,7 @@ function storeAndClose () {
 
 	if (!config.isCordova) {
 		document.getElementById("completedText").style.display = "block";
+		window.close();
 	}
 
 }
